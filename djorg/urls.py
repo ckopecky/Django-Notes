@@ -14,16 +14,36 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include, re_path
-from rest_framework import routers
-from rest_framework.authtoken import views
+from django.contrib.auth.models import User
+from django.urls import include, path, re_path
+from rest_framework import routers, serializers, viewsets
 from notes.serializer import PersonalNoteViewSet
+from notes.views import index
+from . import views
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = ('url', 'username', 'email', 'is_staff', 'is_superuser')
+
+# ViewSets define the view behavior.
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 
 router = routers.DefaultRouter()
+router.register(r'users', UserViewSet)
 router.register(r'notes', PersonalNoteViewSet)
 
+app_name='home'
 urlpatterns = [
+    path('notes/', include('notes.urls')),
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),
-    re_path(r'^api-token-auth/', views.obtain_auth_token)
+    re_path(r'^api/', include(router.urls)),
+    re_path(r'^accounts/', include('allauth.urls')),
+    re_path(r'^api-auth/', include('rest_framework.urls')),
+    path('', views.Home.as_view(), name='home'),
+
+    # re_path(r'^graphql/', GraphQLView.as_view(graphiql=True)),
 ]

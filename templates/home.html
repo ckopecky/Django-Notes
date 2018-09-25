@@ -1,0 +1,8 @@
+{% load account %}
+
+<h1>Lambda Django Notes App</h1>
+{% if user.is_authenticated %}
+<p>Welcome {{ user.username }} !!!</p>
+{% else %}
+<a href="../notes/templates/base.html">Sign In</a>
+{% endif %}
